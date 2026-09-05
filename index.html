@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expense Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #F2F5FB;
+    --surface: #FFFFFF;
+    --surface-2: #EEF2F9;
+    --border: #D6DFEd;
+    --text: #1A2D40;
+    --text-2: #526475;
+    --text-3: #8A9DB0;
+    --accent: #1B5EA0;
+    --accent-bg: #E6EFFA;
+    --debit: #C63B40;
+    --debit-bg: #FAE8E8;
+    --credit: #1E8A5A;
+    --credit-bg: #E4F5EE;
+    --shadow-sm: 0 1px 3px rgba(26,45,64,.07);
+    --shadow: 0 2px 8px rgba(26,45,64,.09);
+    --radius: 8px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1924;
+      --surface: #152130;
+      --surface-2: #1C2D3E;
+      --border: #253545;
+      --text: #D8E6F2;
+      --text-2: #7896AC;
+      --text-3: #4A6070;
+      --accent: #4A9BE8;
+      --accent-bg: #162438;
+      --debit: #E85A60;
+      --debit-bg: #2A1618;
+      --credit: #3DB87A;
+      --credit-bg: #122418;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.25);
+      --shadow: 0 2px 8px rgba(0,0,0,.3);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0E1924;
+    --surface: #152130;
+    --surface-2: #1C2D3E;
+    --border: #253545;
+    --text: #D8E6F2;
+    --text-2: #7896AC;
+    --text-3: #4A6070;
+    --accent: #4A9BE8;
+    --accent-bg: #162438;
+    --debit: #E85A60;
+    --debit-bg: #2A1618;
+    --credit: #3DB87A;
+    --credit-bg: #122418;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.25);
+    --shadow: 0 2px 8px rgba(0,0,0,.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── Header ─────────────────────────────── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .header-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 20px;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+
+  .header-banks {
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 0.03em;
+    font-weight: 500;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .refresh-btn {
+    font-size: 12px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    padding: 5px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .refresh-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #27AE60;
+    flex-shrink: 0;
+  }
+
+  .status-dot.loading { background: var(--accent); animation: blink 1.2s ease-in-out infinite; }
+  .status-dot.error { background: var(--debit); }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+  }
+
+  .status-text { font-size: 12px; color: var(--text-3); }
+
+  /* ── Main ─────────────────────────────── */
+  .main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 24px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── Section label ─────────────────────── */
+  .sect-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 12px;
+  }
+
+  /* ── Stat tiles ─────────────────────────── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+  }
+
+  .stat-tile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 8px;
+  }
+
+  .stat-number {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-number.debit { color: var(--debit); }
+  .stat-number.credit { color: var(--credit); }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Two-col ─────────────────────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* ── Category section ──────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .cat-band {
+    height: 10px;
+    border-radius: 6px;
+    display: flex;
+    gap: 2px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .cat-seg {
+    height: 100%;
+    border-radius: 3px;
+    transition: opacity .15s;
+    min-width: 4px;
+  }
+
+  .cat-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .legend-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .legend-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .legend-swatch {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .legend-name {
+    font-size: 12px;
+    color: var(--text-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .legend-bar-wrap {
+    flex: 1;
+    height: 3px;
+    background: var(--surface-2);
+    border-radius: 2px;
+    overflow: hidden;
+    max-width: 100px;
+  }
+
+  .legend-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+
+  .legend-amt {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Bank section ──────────────────────── */
+  .bank-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .bank-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .bank-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .bank-name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bank-stripe {
+    width: 3px;
+    height: 16px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .bank-name { font-size: 13px; font-weight: 500; color: var(--text); }
+
+  .bank-count {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-left: 4px;
+  }
+
+  .bank-amount {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--debit);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bank-bar-track {
+    height: 3px;
+    background: var(--surface-2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .bank-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width .4s ease;
+  }
+
+  /* ── Direction split ──────────────────── */
+  .dir-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    height: fit-content;
+  }
+
+  .dir-tile {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+
+  .dir-tile.debit { background: var(--debit-bg); border-color: var(--debit); }
+  .dir-tile.credit { background: var(--credit-bg); border-color: var(--credit); }
+
+  .dir-icon {
+    font-size: 18px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .dir-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .dir-tile.debit .dir-label { color: var(--debit); }
+  .dir-tile.credit .dir-label { color: var(--credit); }
+
+  .dir-amount {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 22px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dir-tile.debit .dir-amount { color: var(--debit); }
+  .dir-tile.credit .dir-amount { color: var(--credit); }
+
+  .dir-sub { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+
+  /* ── Transaction table ──────────────── */
+  .txn-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .txn-header {
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .txn-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+    cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+    transition: all .12s;
+  }
+
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
+  .pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .pill:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .table-wrap { overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead th {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    text-align: left;
+    padding: 9px 22px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  thead th.th-right { text-align: right; }
+
+  tbody td {
+    padding: 10px 22px;
+    font-size: 13px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface-2); }
+
+  .td-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+
+  .td-bank { font-size: 12px; color: var(--text-2); white-space: nowrap; }
+
+  .td-merchant { font-weight: 500; }
+
+  .td-type { font-size: 11px; color: var(--text-3); white-space: nowrap; }
+
+  .cat-chip {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .td-amount {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .td-amount.debit { color: var(--debit); }
+  .td-amount.credit { color: var(--credit); }
+
+  .dir-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .dir-badge.debit { background: var(--debit-bg); color: var(--debit); }
+  .dir-badge.credit { background: var(--credit-bg); color: var(--credit); }
+
+  .empty-state {
+    text-align: center;
+    padding: 52px 24px;
+    color: var(--text-3);
+  }
+
+  .empty-state p { font-size: 14px; }
+  .empty-state small { font-size: 12px; display: block; margin-top: 6px; }
+
+  /* ── Responsive ─────────────────────── */
+  @media (max-width: 740px) {
+    .header { padding: 12px 16px; }
+    .main { padding: 16px; gap: 16px; }
+    .two-col { grid-template-columns: 1fr; }
+    .dir-split { grid-template-columns: 1fr 1fr; }
+    .stat-number { font-size: 22px; }
+  }
+
+  .bank-sect-gap { height: 14px; }
+  .bank-card { padding: 16px 18px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .status-dot.loading { animation: none; opacity: 0.7; }
+    .bank-bar-fill { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <span class="header-title">Expense Dashboard</span>
+    <span class="header-banks">HDFC · ICICI · Axis</span>
+  </div>
+  <div class="header-right">
+    <span class="status-dot loading" id="statusDot"></span>
+    <span class="status-text" id="statusText">Loading…</span>
+    <button class="refresh-btn" id="refreshBtn" aria-label="Refresh data">Refresh</button>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-tile">
+      <div class="stat-label">Total Spend</div>
+      <div class="stat-number debit" id="statTotalSpend">—</div>
+      <div class="stat-sub" id="statTotalSub">debits only</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">Transactions</div>
+      <div class="stat-number" id="statCount">—</div>
+      <div class="stat-sub" id="statCountSub">all banks</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">Largest Debit</div>
+      <div class="stat-number debit" id="statMax">—</div>
+      <div class="stat-sub" id="statMaxSub">—</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">Total Credit</div>
+      <div class="stat-number credit" id="statCredit">—</div>
+      <div class="stat-sub" id="statCreditSub">inflows</div>
+    </div>
+  </div>
+
+  <!-- Category breakdown + Direction split -->
+  <div class="two-col">
+
+    <div class="card">
+      <div class="sect-label">Spend by Category</div>
+      <div class="cat-band" id="catBand"></div>
+      <div class="cat-legend" id="catLegend"></div>
+    </div>
+
+    <div>
+      <div class="sect-label">By Direction</div>
+      <div class="dir-split" id="dirSplit">
+        <div class="dir-tile debit">
+          <span class="dir-icon" aria-hidden="true">↑</span>
+          <div class="dir-label">Debit</div>
+          <div class="dir-amount" id="dirDebitAmt">—</div>
+          <div class="dir-sub" id="dirDebitSub">—</div>
+        </div>
+        <div class="dir-tile credit">
+          <span class="dir-icon" aria-hidden="true">↓</span>
+          <div class="dir-label">Credit</div>
+          <div class="dir-amount" id="dirCreditAmt">—</div>
+          <div class="dir-sub" id="dirCreditSub">—</div>
+        </div>
+      </div>
+
+      <div class="bank-sect-gap"></div>
+      <div class="sect-label">By Bank</div>
+      <div class="card bank-card">
+        <div class="bank-list" id="bankList"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Transactions -->
+  <div class="txn-section">
+    <div class="txn-header">
+      <span class="txn-title">Transactions</span>
+      <div class="filter-row" id="filterRow">
+        <button class="pill active" data-filter="all">All</button>
+        <button class="pill" data-filter="debit">Debit</button>
+        <button class="pill" data-filter="credit">Credit</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Bank</th>
+            <th>Merchant</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Dir</th>
+            <th class="th-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody id="txnBody">
+          <tr><td colspan="7" class="empty-state"><p>Loading transactions…</p></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const SHEET_ID = '199sa0tJh3HpgdmpjwCFf3bFa9jmlyMamHWDSFh5DLzo';
+  const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
+
+  const CAT_COLORS = {
+    Food:          '#E8A838',
+    Transport:     '#4A90D9',
+    Shopping:      '#9B59B6',
+    Utilities:     '#27AE60',
+    Entertainment: '#E74C3C',
+    Healthcare:    '#16A085',
+    Other:         '#95A5A6',
+  };
+
+  const BANK_COLORS = {
+    'HDFC Bank':        '#004C8C',
+    'ICICI Bank':       '#F37421',
+    'Axis Bank':        '#800020',
+    'Axis Credit Card': '#9E1030',
+    'ICICI Credit Card':'#C05010',
+    default:            '#607D8B',
+  };
+
+  const fmt = (n) => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtShort = (n) => {
+    if (n >= 100000) return '₹' + (n / 100000).toFixed(1) + 'L';
+    if (n >= 1000) return '₹' + (n / 1000).toFixed(1) + 'K';
+    return '₹' + Number(n).toFixed(0);
+  };
+
+  let allRows = [];
+  let activeFilter = 'all';
+
+  function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].match(/(".*?"|[^,]+|(?<=,)(?=,)|(?<=,)$|^(?=,))/g) || [];
+      const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+      if (clean.length < 7) continue;
+      const [date, bank, type, amountRaw, merchant, category, direction] = clean;
+      const amount = parseFloat(amountRaw);
+      if (!date || isNaN(amount)) continue;
+      rows.push({ date, bank, type, amount, merchant, category, direction: direction.toLowerCase() });
+    }
+    return rows;
+  }
+
+  function bankColor(name) {
+    return BANK_COLORS[name] || BANK_COLORS.default;
+  }
+
+  function catColor(name) {
+    return CAT_COLORS[name] || CAT_COLORS.Other;
+  }
+
+  function renderStats(rows) {
+    const debits = rows.filter(r => r.direction === 'debit');
+    const credits = rows.filter(r => r.direction === 'credit');
+    const totalSpend = debits.reduce((s, r) => s + r.amount, 0);
+    const totalCredit = credits.reduce((s, r) => s + r.amount, 0);
+    const maxRow = debits.reduce((m, r) => r.amount > (m ? m.amount : -1) ? r : m, null);
+
+    document.getElementById('statTotalSpend').textContent = fmt(totalSpend);
+    document.getElementById('statTotalSub').textContent = `${debits.length} debit txns`;
+    document.getElementById('statCount').textContent = rows.length;
+    document.getElementById('statCountSub').textContent = [...new Set(rows.map(r => r.bank))].join(', ') || 'all banks';
+    document.getElementById('statMax').textContent = maxRow ? fmt(maxRow.amount) : '—';
+    document.getElementById('statMaxSub').textContent = maxRow ? maxRow.merchant || '—' : '—';
+    document.getElementById('statCredit').textContent = fmt(totalCredit);
+    document.getElementById('statCreditSub').textContent = `${credits.length} credit txns`;
+
+    document.getElementById('dirDebitAmt').textContent = fmtShort(totalSpend);
+    document.getElementById('dirDebitSub').textContent = `${debits.length} transactions`;
+    document.getElementById('dirCreditAmt').textContent = fmtShort(totalCredit);
+    document.getElementById('dirCreditSub').textContent = `${credits.length} transactions`;
+  }
+
+  function renderCategories(rows) {
+    const debits = rows.filter(r => r.direction === 'debit');
+    const totals = {};
+    debits.forEach(r => { totals[r.category] = (totals[r.category] || 0) + r.amount; });
+    const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+    const grand = sorted.reduce((s, [, v]) => s + v, 0) || 1;
+
+    const band = document.getElementById('catBand');
+    const legend = document.getElementById('catLegend');
+    band.innerHTML = '';
+    legend.innerHTML = '';
+
+    sorted.forEach(([cat, amt]) => {
+      const pct = (amt / grand) * 100;
+      const color = catColor(cat);
+
+      const seg = document.createElement('div');
+      seg.className = 'cat-seg';
+      seg.style.width = pct + '%';
+      seg.style.background = color;
+      seg.title = `${cat}: ${fmt(amt)}`;
+      band.appendChild(seg);
+
+      const row = document.createElement('div');
+      row.className = 'legend-row';
+      row.innerHTML = `
+        <div class="legend-left">
+          <div class="legend-swatch" style="background:${color}"></div>
+          <span class="legend-name">${escHtml(cat)}</span>
+        </div>
+        <div class="legend-bar-wrap">
+          <div class="legend-bar-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <span class="legend-amt">${fmt(amt)}</span>
+      `;
+      legend.appendChild(row);
+    });
+
+    if (sorted.length === 0) {
+      band.innerHTML = '<div style="width:100%;background:var(--surface-2);border-radius:6px;height:100%"></div>';
+      legend.innerHTML = '<p style="font-size:12px;color:var(--text-3)">No debit transactions yet</p>';
+    }
+  }
+
+  function renderBanks(rows) {
+    const totals = {};
+    const counts = {};
+    rows.filter(r => r.direction === 'debit').forEach(r => {
+      totals[r.bank] = (totals[r.bank] || 0) + r.amount;
+      counts[r.bank] = (counts[r.bank] || 0) + 1;
+    });
+    const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+    const max = sorted[0]?.[1] || 1;
+
+    const list = document.getElementById('bankList');
+    list.innerHTML = '';
+
+    if (sorted.length === 0) {
+      list.innerHTML = '<p style="font-size:12px;color:var(--text-3)">No data yet</p>';
+      return;
+    }
+
+    sorted.forEach(([bank, amt]) => {
+      const pct = (amt / max) * 100;
+      const color = bankColor(bank);
+      const item = document.createElement('div');
+      item.className = 'bank-item';
+      item.innerHTML = `
+        <div class="bank-top">
+          <div class="bank-name-wrap">
+            <div class="bank-stripe" style="background:${color}"></div>
+            <span class="bank-name">${escHtml(bank)}</span>
+            <span class="bank-count">${counts[bank]} txn${counts[bank] !== 1 ? 's' : ''}</span>
+          </div>
+          <span class="bank-amount">${fmt(amt)}</span>
+        </div>
+        <div class="bank-bar-track">
+          <div class="bank-bar-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  function renderTable(rows) {
+    const filtered = activeFilter === 'all' ? rows : rows.filter(r => r.direction === activeFilter);
+    const tbody = document.getElementById('txnBody');
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><p>No transactions</p><small>New emails are processed every 15 minutes</small></td></tr>`;
+      return;
+    }
+
+    const sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    tbody.innerHTML = sorted.map(r => {
+      const color = catColor(r.category);
+      const dir = r.direction === 'debit' ? 'debit' : 'credit';
+      const sign = dir === 'debit' ? '−' : '+';
+      return `<tr>
+        <td class="td-date">${escHtml(r.date)}</td>
+        <td class="td-bank">${escHtml(r.bank)}</td>
+        <td class="td-merchant">${escHtml(r.merchant || '—')}</td>
+        <td class="td-type">${escHtml(r.type)}</td>
+        <td><span class="cat-chip" style="background:${color}18;color:${color}">${escHtml(r.category)}</span></td>
+        <td><span class="dir-badge ${dir}">${dir}</span></td>
+        <td class="td-amount ${dir}">${sign}${fmt(r.amount)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function setStatus(state, text) {
+    const dot = document.getElementById('statusDot');
+    dot.className = 'status-dot ' + state;
+    document.getElementById('statusText').textContent = text;
+  }
+
+  async function loadData() {
+    setStatus('loading', 'Loading…');
+    try {
+      const res = await fetch(CSV_URL);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      allRows = parseCSV(text);
+      renderStats(allRows);
+      renderCategories(allRows);
+      renderBanks(allRows);
+      renderTable(allRows);
+      const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      setStatus('ok', `Updated ${now}`);
+    } catch (e) {
+      setStatus('error', 'Failed to load — ' + e.message);
+      document.getElementById('txnBody').innerHTML = `<tr><td colspan="7" class="empty-state"><p>Could not fetch data</p><small>${escHtml(e.message)}</small></td></tr>`;
+    }
+  }
+
+  document.getElementById('refreshBtn').addEventListener('click', loadData);
+
+  document.getElementById('filterRow').addEventListener('click', (e) => {
+    const btn = e.target.closest('.pill');
+    if (!btn) return;
+    activeFilter = btn.dataset.filter;
+    document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p === btn));
+    renderTable(allRows);
+  });
+
+  loadData();
+</script>
+
+</body>
+</html>
