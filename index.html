@@ -21,6 +21,8 @@
     --debit-bg: #FAE8E8;
     --credit: #1E8A5A;
     --credit-bg: #E4F5EE;
+    --cc-color: #9E1030;
+    --cc-bg: #F9E8EC;
     --shadow-sm: 0 1px 3px rgba(26,45,64,.07);
     --shadow: 0 2px 8px rgba(26,45,64,.09);
     --radius: 8px;
@@ -41,6 +43,8 @@
       --debit-bg: #2A1618;
       --credit: #3DB87A;
       --credit-bg: #122418;
+      --cc-color: #E8607A;
+      --cc-bg: #2A1220;
       --shadow-sm: 0 1px 3px rgba(0,0,0,.25);
       --shadow: 0 2px 8px rgba(0,0,0,.3);
     }
@@ -60,6 +64,8 @@
     --debit-bg: #2A1618;
     --credit: #3DB87A;
     --credit-bg: #122418;
+    --cc-color: #E8607A;
+    --cc-bg: #2A1220;
     --shadow-sm: 0 1px 3px rgba(0,0,0,.25);
     --shadow: 0 2px 8px rgba(0,0,0,.3);
   }
@@ -84,13 +90,10 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    flex-wrap: wrap;
   }
 
-  .header-brand {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-  }
+  .header-brand { display: flex; align-items: baseline; gap: 10px; }
 
   .header-title {
     font-family: 'DM Serif Display', Georgia, serif;
@@ -99,18 +102,9 @@
     letter-spacing: -0.2px;
   }
 
-  .header-banks {
-    font-size: 11px;
-    color: var(--text-3);
-    letter-spacing: 0.03em;
-    font-weight: 500;
-  }
+  .header-banks { font-size: 11px; color: var(--text-3); letter-spacing: 0.03em; font-weight: 500; }
 
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .header-right { display: flex; align-items: center; gap: 10px; }
 
   .refresh-btn {
     font-size: 12px;
@@ -128,8 +122,7 @@
   .refresh-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   .status-dot {
-    width: 7px;
-    height: 7px;
+    width: 7px; height: 7px;
     border-radius: 50%;
     background: #27AE60;
     flex-shrink: 0;
@@ -138,21 +131,171 @@
   .status-dot.loading { background: var(--accent); animation: blink 1.2s ease-in-out infinite; }
   .status-dot.error { background: var(--debit); }
 
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.25; }
-  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 
   .status-text { font-size: 12px; color: var(--text-3); }
 
   /* ── Main ─────────────────────────────── */
   .main {
-    max-width: 1080px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 24px 32px;
     display: flex;
     flex-direction: column;
     gap: 20px;
+  }
+
+  /* ── Date range filter bar ─────────────── */
+  .date-filter-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .date-filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    flex-shrink: 0;
+  }
+
+  .date-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .pill {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+    cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+    transition: all .12s;
+  }
+
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
+  .pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .pill:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .date-custom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+
+  .date-custom input[type="date"] {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .date-custom input[type="date"]:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+
+  .date-sep { font-size: 11px; color: var(--text-3); }
+
+  /* ── Balance cards ─────────────────────── */
+  .balance-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+  }
+
+  .balance-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .balance-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .balance-card.axis-cc::before { background: #9E1030; }
+  .balance-card.icici-cc::before { background: #F37421; }
+  .balance-card.hdfc::before { background: #004C8C; }
+  .balance-card.icici-savings::before { background: #F37421; }
+
+  .balance-bank {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 6px;
+  }
+
+  .balance-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .balance-metrics { display: flex; flex-direction: column; gap: 4px; }
+
+  .balance-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .balance-metric-label { font-size: 11px; color: var(--text-3); }
+
+  .balance-metric-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .balance-metric-value.available { color: var(--credit); }
+  .balance-metric-value.outstanding { color: var(--debit); }
+  .balance-metric-value.na { color: var(--text-3); }
+
+  .balance-bar-track {
+    height: 4px;
+    background: var(--surface-2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .balance-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--debit);
+    transition: width .4s ease;
+  }
+
+  .balance-bar-fill.low { background: var(--credit); }
+
+  .balance-note {
+    font-size: 10px;
+    color: var(--text-3);
+    margin-top: 6px;
   }
 
   /* ── Section label ─────────────────────── */
@@ -199,22 +342,15 @@
 
   .stat-number.debit { color: var(--debit); }
   .stat-number.credit { color: var(--credit); }
+  .stat-number.cc { color: var(--cc-color); }
 
-  .stat-sub {
-    font-size: 11px;
-    color: var(--text-3);
-    margin-top: 5px;
-    font-variant-numeric: tabular-nums;
-  }
+  .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 5px; font-variant-numeric: tabular-nums; }
 
-  /* ── Two-col ─────────────────────────────── */
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
+  /* ── Two-col layout ─────────────────────── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 
-  /* ── Category section ──────────────────── */
+  /* ── Cards ─────────────────────────────── */
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -223,6 +359,7 @@
     box-shadow: var(--shadow-sm);
   }
 
+  /* ── Category band ──────────────────────── */
   .cat-band {
     height: 10px;
     border-radius: 6px;
@@ -239,11 +376,7 @@
     min-width: 4px;
   }
 
-  .cat-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
+  .cat-legend { display: flex; flex-direction: column; gap: 8px; }
 
   .legend-row {
     display: flex;
@@ -252,19 +385,9 @@
     gap: 8px;
   }
 
-  .legend-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-  }
+  .legend-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
 
-  .legend-swatch {
-    width: 9px;
-    height: 9px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
+  .legend-swatch { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
 
   .legend-name {
     font-size: 12px;
@@ -283,10 +406,7 @@
     max-width: 100px;
   }
 
-  .legend-bar-fill {
-    height: 100%;
-    border-radius: 2px;
-  }
+  .legend-bar-fill { height: 100%; border-radius: 2px; }
 
   .legend-amt {
     font-family: 'IBM Plex Mono', monospace;
@@ -297,41 +417,113 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* ── Bank section ──────────────────────── */
-  .bank-list { display: flex; flex-direction: column; gap: 10px; }
-
-  .bank-item {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+  /* ── CC Spotlight ───────────────────────── */
+  .cc-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
   }
 
-  .bank-top {
+  .cc-block {
+    border-radius: 6px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+
+  .cc-block.cc-spend { background: var(--cc-bg); border: 1.5px solid var(--cc-color); }
+  .cc-block.bank-spend { background: var(--accent-bg); border: 1.5px solid var(--accent); }
+
+  .cc-block-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .cc-block.cc-spend .cc-block-label { color: var(--cc-color); }
+  .cc-block.bank-spend .cc-block-label { color: var(--accent); }
+
+  .cc-block-amount {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .cc-block.cc-spend .cc-block-amount { color: var(--cc-color); }
+  .cc-block.bank-spend .cc-block-amount { color: var(--accent); }
+
+  .cc-block-sub { font-size: 10px; color: var(--text-3); margin-top: 4px; }
+
+  .cc-bar-wrap {
+    height: 6px;
+    border-radius: 4px;
+    background: var(--surface-2);
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .cc-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--cc-color);
+    transition: width .4s ease;
+  }
+
+  .cc-pct-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-3);
+    margin-bottom: 12px;
+  }
+
+  .cc-card-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .cc-card-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
-
-  .bank-name-wrap {
-    display: flex;
-    align-items: center;
     gap: 8px;
   }
 
-  .bank-stripe {
-    width: 3px;
-    height: 16px;
-    border-radius: 2px;
-    flex-shrink: 0;
+  .cc-card-name { font-size: 12px; color: var(--text-2); }
+
+  .cc-card-amt {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--cc-color);
+    font-variant-numeric: tabular-nums;
   }
+
+  /* ── Monthly chart ──────────────────────── */
+  .chart-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .chart-svg { width: 100%; height: 120px; display: block; }
+
+  /* ── Bank section ──────────────────────── */
+  .bank-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .bank-item { display: flex; flex-direction: column; gap: 5px; }
+
+  .bank-top { display: flex; align-items: center; justify-content: space-between; }
+
+  .bank-name-wrap { display: flex; align-items: center; gap: 8px; }
+
+  .bank-stripe { width: 3px; height: 16px; border-radius: 2px; flex-shrink: 0; }
 
   .bank-name { font-size: 13px; font-weight: 500; color: var(--text); }
 
-  .bank-count {
-    font-size: 11px;
-    color: var(--text-3);
-    margin-left: 4px;
-  }
+  .bank-count { font-size: 11px; color: var(--text-3); margin-left: 4px; }
 
   .bank-amount {
     font-family: 'IBM Plex Mono', monospace;
@@ -341,63 +533,58 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .bank-bar-track {
+  .bank-bar-track { height: 3px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
+
+  .bank-bar-fill { height: 100%; border-radius: 2px; transition: width .4s ease; }
+
+  /* ── Top merchants ──────────────────────── */
+  .merchant-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .merchant-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .merchant-rank {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-3);
+    width: 16px;
+    text-align: right;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .merchant-bar-wrap {
+    flex: 1;
     height: 3px;
     background: var(--surface-2);
     border-radius: 2px;
     overflow: hidden;
   }
 
-  .bank-bar-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width .4s ease;
+  .merchant-bar-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+
+  .merchant-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 2;
   }
 
-  /* ── Direction split ──────────────────── */
-  .dir-split {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    height: fit-content;
-  }
-
-  .dir-tile {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 18px;
-  }
-
-  .dir-tile.debit { background: var(--debit-bg); border-color: var(--debit); }
-  .dir-tile.credit { background: var(--credit-bg); border-color: var(--credit); }
-
-  .dir-icon {
-    font-size: 18px;
-    margin-bottom: 8px;
-    display: block;
-  }
-
-  .dir-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
-
-  .dir-tile.debit .dir-label { color: var(--debit); }
-  .dir-tile.credit .dir-label { color: var(--credit); }
-
-  .dir-amount {
-    font-family: 'DM Serif Display', Georgia, serif;
-    font-size: 22px;
+  .merchant-amt {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
-
-  .dir-tile.debit .dir-amount { color: var(--debit); }
-  .dir-tile.credit .dir-amount { color: var(--credit); }
-
-  .dir-sub { font-size: 11px; color: var(--text-3); margin-top: 3px; }
 
   /* ── Transaction table ──────────────── */
   .txn-section {
@@ -409,7 +596,7 @@
   }
 
   .txn-header {
-    padding: 16px 22px;
+    padding: 14px 22px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -426,28 +613,7 @@
     color: var(--text-3);
   }
 
-  .filter-row {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-
-  .pill {
-    font-size: 11px;
-    font-weight: 500;
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text-2);
-    cursor: pointer;
-    font-family: 'IBM Plex Sans', sans-serif;
-    transition: all .12s;
-  }
-
-  .pill:hover { border-color: var(--accent); color: var(--accent); }
-  .pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .pill:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
   .table-wrap { overflow-x: auto; }
 
@@ -460,7 +626,7 @@
     text-transform: uppercase;
     color: var(--text-3);
     text-align: left;
-    padding: 9px 22px;
+    padding: 9px 16px;
     background: var(--surface-2);
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
@@ -469,7 +635,7 @@
   thead th.th-right { text-align: right; }
 
   tbody td {
-    padding: 10px 22px;
+    padding: 9px 16px;
     font-size: 13px;
     color: var(--text);
     border-bottom: 1px solid var(--border);
@@ -479,17 +645,9 @@
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover td { background: var(--surface-2); }
 
-  .td-date {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: var(--text-3);
-    white-space: nowrap;
-  }
-
+  .td-date { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3); white-space: nowrap; }
   .td-bank { font-size: 12px; color: var(--text-2); white-space: nowrap; }
-
   .td-merchant { font-weight: 500; }
-
   .td-type { font-size: 11px; color: var(--text-3); white-space: nowrap; }
 
   .cat-chip {
@@ -500,6 +658,21 @@
     border-radius: 4px;
     letter-spacing: 0.02em;
     white-space: nowrap;
+  }
+
+  .cc-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: var(--cc-bg);
+    color: var(--cc-color);
+    border: 1px solid var(--cc-color);
+    margin-left: 4px;
+    vertical-align: middle;
+    text-transform: uppercase;
   }
 
   .td-amount {
@@ -528,12 +701,7 @@
   .dir-badge.debit { background: var(--debit-bg); color: var(--debit); }
   .dir-badge.credit { background: var(--credit-bg); color: var(--credit); }
 
-  .empty-state {
-    text-align: center;
-    padding: 52px 24px;
-    color: var(--text-3);
-  }
-
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--text-3); }
   .empty-state p { font-size: 14px; }
   .empty-state small { font-size: 12px; display: block; margin-top: 6px; }
 
@@ -541,17 +709,15 @@
   @media (max-width: 740px) {
     .header { padding: 12px 16px; }
     .main { padding: 16px; gap: 16px; }
-    .two-col { grid-template-columns: 1fr; }
-    .dir-split { grid-template-columns: 1fr 1fr; }
+    .two-col, .three-col { grid-template-columns: 1fr; }
     .stat-number { font-size: 22px; }
+    .date-custom { margin-left: 0; width: 100%; }
+    .balance-row { grid-template-columns: 1fr 1fr; }
   }
-
-  .bank-sect-gap { height: 14px; }
-  .bank-card { padding: 16px 18px; }
 
   @media (prefers-reduced-motion: reduce) {
     .status-dot.loading { animation: none; opacity: 0.7; }
-    .bank-bar-fill { transition: none; }
+    .bank-bar-fill, .balance-bar-fill, .cc-bar-fill { transition: none; }
   }
 </style>
 </head>
@@ -571,7 +737,106 @@
 
 <main class="main">
 
-  <!-- Stats -->
+  <!-- Date Range Filter -->
+  <div class="date-filter-bar">
+    <span class="date-filter-label">Period</span>
+    <div class="date-pills" id="datePills">
+      <button class="pill" data-range="7d">Last 7 Days</button>
+      <button class="pill" data-range="month">This Month</button>
+      <button class="pill active" data-range="3m">Last 3 Months</button>
+      <button class="pill" data-range="all">All Time</button>
+    </div>
+    <div class="date-custom">
+      <span class="date-sep">From</span>
+      <input type="date" id="dateFrom" aria-label="From date">
+      <span class="date-sep">to</span>
+      <input type="date" id="dateTo" aria-label="To date">
+    </div>
+  </div>
+
+  <!-- Card Balances (static, from latest email data) -->
+  <div>
+    <div class="sect-label">Card &amp; Account Balances</div>
+    <div class="balance-row">
+
+      <div class="balance-card icici-cc">
+        <div class="balance-bank">ICICI Bank</div>
+        <div class="balance-name">Credit Card ···· 8009</div>
+        <div class="balance-metrics">
+          <div class="balance-metric">
+            <span class="balance-metric-label">Total Limit</span>
+            <span class="balance-metric-value">₹1,00,000</span>
+          </div>
+          <div class="balance-metric">
+            <span class="balance-metric-label">Outstanding</span>
+            <span class="balance-metric-value outstanding">~₹28,274</span>
+          </div>
+          <div class="balance-metric">
+            <span class="balance-metric-label">Available</span>
+            <span class="balance-metric-value available">~₹71,726</span>
+          </div>
+        </div>
+        <div class="balance-bar-track">
+          <div class="balance-bar-fill" style="width:28%"></div>
+        </div>
+        <div class="balance-note">Estimated · as of Sep 5, 2026</div>
+      </div>
+
+      <div class="balance-card axis-cc">
+        <div class="balance-bank">Axis Bank</div>
+        <div class="balance-name">Credit Card ···· 2215</div>
+        <div class="balance-metrics">
+          <div class="balance-metric">
+            <span class="balance-metric-label">Total Limit</span>
+            <span class="balance-metric-value na">—</span>
+          </div>
+          <div class="balance-metric">
+            <span class="balance-metric-label">Bill Due Aug</span>
+            <span class="balance-metric-value outstanding">₹35,767</span>
+          </div>
+          <div class="balance-metric">
+            <span class="balance-metric-label">Paid Sep 1</span>
+            <span class="balance-metric-value available">₹20,000</span>
+          </div>
+        </div>
+        <div class="balance-bar-track">
+          <div class="balance-bar-fill" style="width:60%"></div>
+        </div>
+        <div class="balance-note">Bill paid Sep 1 · new charges added</div>
+      </div>
+
+      <div class="balance-card hdfc">
+        <div class="balance-bank">HDFC Bank</div>
+        <div class="balance-name">Savings Account</div>
+        <div class="balance-metrics">
+          <div class="balance-metric">
+            <span class="balance-metric-label">Balance</span>
+            <span class="balance-metric-value na">Not available</span>
+          </div>
+        </div>
+        <div class="balance-note">No alert emails in period</div>
+      </div>
+
+      <div class="balance-card icici-savings">
+        <div class="balance-bank">ICICI Bank</div>
+        <div class="balance-name">Savings ···· 4113</div>
+        <div class="balance-metrics">
+          <div class="balance-metric">
+            <span class="balance-metric-label">Balance</span>
+            <span class="balance-metric-value na">Not available</span>
+          </div>
+          <div class="balance-metric">
+            <span class="balance-metric-label">NEFT Sent</span>
+            <span class="balance-metric-value outstanding">₹38,000</span>
+          </div>
+        </div>
+        <div class="balance-note">₹18K (Aug 4) + ₹20K (Jul 21) NEFT</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Stats Row -->
   <div class="stats-row" id="statsRow">
     <div class="stat-tile">
       <div class="stat-label">Total Spend</div>
@@ -579,9 +844,9 @@
       <div class="stat-sub" id="statTotalSub">debits only</div>
     </div>
     <div class="stat-tile">
-      <div class="stat-label">Transactions</div>
-      <div class="stat-number" id="statCount">—</div>
-      <div class="stat-sub" id="statCountSub">all banks</div>
+      <div class="stat-label">Credit Card Spend</div>
+      <div class="stat-number cc" id="statCCSpend">—</div>
+      <div class="stat-sub" id="statCCSub">of total spend</div>
     </div>
     <div class="stat-tile">
       <div class="stat-label">Largest Debit</div>
@@ -589,13 +854,13 @@
       <div class="stat-sub" id="statMaxSub">—</div>
     </div>
     <div class="stat-tile">
-      <div class="stat-label">Total Credit</div>
-      <div class="stat-number credit" id="statCredit">—</div>
-      <div class="stat-sub" id="statCreditSub">inflows</div>
+      <div class="stat-label">Avg Daily Spend</div>
+      <div class="stat-number" id="statAvgDay">—</div>
+      <div class="stat-sub" id="statAvgDaySub">over period</div>
     </div>
   </div>
 
-  <!-- Category breakdown + Direction split -->
+  <!-- Category + CC Spotlight -->
   <div class="two-col">
 
     <div class="card">
@@ -604,40 +869,63 @@
       <div class="cat-legend" id="catLegend"></div>
     </div>
 
-    <div>
-      <div class="sect-label">By Direction</div>
-      <div class="dir-split" id="dirSplit">
-        <div class="dir-tile debit">
-          <span class="dir-icon" aria-hidden="true">↑</span>
-          <div class="dir-label">Debit</div>
-          <div class="dir-amount" id="dirDebitAmt">—</div>
-          <div class="dir-sub" id="dirDebitSub">—</div>
+    <div class="card">
+      <div class="sect-label">Credit Card vs Bank Account</div>
+      <div class="cc-split">
+        <div class="cc-block cc-spend">
+          <div class="cc-block-label">Credit Cards</div>
+          <div class="cc-block-amount" id="ccTotalAmt">—</div>
+          <div class="cc-block-sub" id="ccTotalSub">—</div>
         </div>
-        <div class="dir-tile credit">
-          <span class="dir-icon" aria-hidden="true">↓</span>
-          <div class="dir-label">Credit</div>
-          <div class="dir-amount" id="dirCreditAmt">—</div>
-          <div class="dir-sub" id="dirCreditSub">—</div>
+        <div class="cc-block bank-spend">
+          <div class="cc-block-label">Bank Account</div>
+          <div class="cc-block-amount" id="bankTotalAmt">—</div>
+          <div class="cc-block-sub" id="bankTotalSub">—</div>
         </div>
       </div>
-
-      <div class="bank-sect-gap"></div>
-      <div class="sect-label">By Bank</div>
-      <div class="card bank-card">
-        <div class="bank-list" id="bankList"></div>
+      <div class="cc-bar-wrap">
+        <div class="cc-bar-fill" id="ccBarFill" style="width:0%"></div>
       </div>
+      <div class="cc-pct-label">
+        <span id="ccPctLeft">CC spend</span>
+        <span id="ccPctRight">Bank spend</span>
+      </div>
+      <div class="sect-label" style="margin-top:4px">By Credit Card</div>
+      <div class="cc-card-list" id="ccCardList"></div>
     </div>
 
   </div>
 
-  <!-- Transactions -->
+  <!-- Monthly Trend -->
+  <div class="chart-container">
+    <div class="sect-label">Monthly Spend Trend</div>
+    <svg class="chart-svg" id="monthlyChart" viewBox="0 0 700 100" preserveAspectRatio="none" aria-label="Monthly spend chart"></svg>
+  </div>
+
+  <!-- Top Merchants + Bank Breakdown -->
+  <div class="two-col">
+
+    <div class="card">
+      <div class="sect-label">Top Merchants</div>
+      <div class="merchant-list" id="merchantList"></div>
+    </div>
+
+    <div class="card">
+      <div class="sect-label">Spend by Bank</div>
+      <div class="bank-list" id="bankList"></div>
+    </div>
+
+  </div>
+
+  <!-- Transactions Table -->
   <div class="txn-section">
     <div class="txn-header">
-      <span class="txn-title">Transactions</span>
+      <span class="txn-title">Transactions <span id="txnCount" style="font-weight:400;color:var(--text-3)"></span></span>
       <div class="filter-row" id="filterRow">
         <button class="pill active" data-filter="all">All</button>
         <button class="pill" data-filter="debit">Debit</button>
         <button class="pill" data-filter="credit">Credit</button>
+        <button class="pill" data-filter="cc">Credit Card</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -663,8 +951,51 @@
 </main>
 
 <script>
+  /* ──────────────────── Constants ────────────────────── */
   const SHEET_ID = '199sa0tJh3HpgdmpjwCFf3bFa9jmlyMamHWDSFh5DLzo';
   const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
+
+  /* Historical seed data from Gmail (Jul–Sep 2026).
+     Merged with live Google Sheets data; deduped by date+bank+amount. */
+  const SEED_DATA = [
+    {date:'2026-09-05',bank:'Axis Bank',type:'Credit Card',amount:2363.56,merchant:'NO BROKER',category:'Other',direction:'debit'},
+    {date:'2026-09-04',bank:'Axis Bank',type:'Credit Card',amount:1003,merchant:'OPENAI',category:'Other',direction:'debit'},
+    {date:'2026-09-04',bank:'ICICI Bank',type:'Credit Card',amount:599,merchant:'ADOBE SOFTWARE',category:'Utilities',direction:'debit'},
+    {date:'2026-09-03',bank:'Axis Bank',type:'Credit Card',amount:650,merchant:'GOOGLE PLAY',category:'Entertainment',direction:'debit'},
+    {date:'2026-08-29',bank:'Axis Bank',type:'Credit Card',amount:2,merchant:'GOOGLE CLOUD',category:'Utilities',direction:'debit'},
+    {date:'2026-08-29',bank:'Axis Bank',type:'Credit Card',amount:2,merchant:'GOOGLE PLAY',category:'Entertainment',direction:'debit'},
+    {date:'2026-08-28',bank:'Axis Bank',type:'Credit Card',amount:2006,merchant:'OPENAI',category:'Other',direction:'debit'},
+    {date:'2026-08-28',bank:'ICICI Bank',type:'Credit Card',amount:2006,merchant:'OPENAI CHATGPT',category:'Other',direction:'debit'},
+    {date:'2026-08-27',bank:'ICICI Bank',type:'Credit Card',amount:758.75,merchant:'BISHAMBER SAHAI',category:'Shopping',direction:'debit'},
+    {date:'2026-08-25',bank:'Axis Bank',type:'Credit Card',amount:99.79,merchant:'PAYPAL',category:'Other',direction:'debit'},
+    {date:'2026-08-21',bank:'ICICI Bank',type:'Credit Card',amount:1,merchant:'ECONOMICTIMES',category:'Entertainment',direction:'debit'},
+    {date:'2026-08-21',bank:'ICICI Bank',type:'Credit Card',amount:1,merchant:'ECONOMICTIMES',category:'Entertainment',direction:'debit'},
+    {date:'2026-08-21',bank:'ICICI Bank',type:'Credit Card',amount:1,merchant:'TIMES INTERNET',category:'Entertainment',direction:'debit'},
+    {date:'2026-08-20',bank:'Axis Bank',type:'Credit Card',amount:145,merchant:'BLINKIT',category:'Food',direction:'debit'},
+    {date:'2026-08-19',bank:'Axis Bank',type:'Credit Card',amount:521,merchant:'BLINKIT',category:'Food',direction:'debit'},
+    {date:'2026-08-18',bank:'Axis Bank',type:'Credit Card',amount:1999,merchant:'OPENAI',category:'Other',direction:'debit'},
+    {date:'2026-08-18',bank:'Axis Bank',type:'Credit Card',amount:281,merchant:'AMAZON PAY',category:'Shopping',direction:'debit'},
+    {date:'2026-08-17',bank:'Axis Bank',type:'Credit Card',amount:1817.7,merchant:'RADIUS SYNE',category:'Other',direction:'debit'},
+    {date:'2026-08-14',bank:'Axis Bank',type:'Credit Card',amount:463,merchant:'BLINKIT',category:'Food',direction:'debit'},
+    {date:'2026-08-12',bank:'Axis Bank',type:'Credit Card',amount:829.21,merchant:'BISHAMBER SAHAI',category:'Shopping',direction:'debit'},
+    {date:'2026-08-12',bank:'ICICI Bank',type:'Credit Card',amount:699,merchant:'SONYLIV',category:'Entertainment',direction:'debit'},
+    {date:'2026-08-11',bank:'Axis Bank',type:'Credit Card',amount:1671,merchant:'BLINKIT',category:'Food',direction:'debit'},
+    {date:'2026-08-07',bank:'Axis Bank',type:'Credit Card',amount:607,merchant:'BLINKIT',category:'Food',direction:'debit'},
+    {date:'2026-08-04',bank:'ICICI Bank',type:'Credit Card',amount:2270.39,merchant:'NOBROKER',category:'Other',direction:'debit'},
+    {date:'2026-08-04',bank:'ICICI Bank',type:'Credit Card',amount:599,merchant:'ADOBE SOFTWARE',category:'Utilities',direction:'debit'},
+    {date:'2026-08-04',bank:'ICICI Bank',type:'NEFT',amount:18000,merchant:'DEEPAK KR SINGH',category:'Other',direction:'debit'},
+    {date:'2026-08-03',bank:'Axis Bank',type:'Credit Card',amount:2,merchant:'GOOGLE PLAY',category:'Entertainment',direction:'debit'},
+    {date:'2026-08-03',bank:'Axis Bank',type:'Credit Card',amount:650,merchant:'GOOGLE PLAY',category:'Entertainment',direction:'debit'},
+    {date:'2026-08-02',bank:'ICICI Bank',type:'Credit Card',amount:3499,merchant:'COURSIV',category:'Other',direction:'debit'},
+    {date:'2026-08-01',bank:'Axis Bank',type:'Credit Card',amount:381,merchant:'BLINKIT',category:'Food',direction:'debit'},
+    {date:'2026-08-01',bank:'Axis Bank',type:'Credit Card',amount:20,merchant:'URBAN COMPANY',category:'Utilities',direction:'debit'},
+    {date:'2026-07-30',bank:'Axis Bank',type:'Credit Card',amount:1090,merchant:'BLINKIT',category:'Food',direction:'debit'},
+    {date:'2026-07-28',bank:'Axis Bank',type:'Credit Card',amount:148,merchant:'URBAN COMPANY',category:'Utilities',direction:'debit'},
+    {date:'2026-07-24',bank:'ICICI Bank',type:'Credit Card',amount:514,merchant:'BLINKIT',category:'Food',direction:'debit'},
+    {date:'2026-07-23',bank:'Axis Bank',type:'Credit Card',amount:1814.84,merchant:'GODADDY',category:'Utilities',direction:'debit'},
+    {date:'2026-07-21',bank:'Axis Bank',type:'Credit Card',amount:925.2,merchant:'BISHAMBER SAHAI',category:'Shopping',direction:'debit'},
+    {date:'2026-07-21',bank:'ICICI Bank',type:'NEFT',amount:20000,merchant:'SUBRAHMANYA BHAT',category:'Other',direction:'debit'},
+  ];
 
   const CAT_COLORS = {
     Food:          '#E8A838',
@@ -677,172 +1008,339 @@
   };
 
   const BANK_COLORS = {
-    'HDFC Bank':        '#004C8C',
-    'ICICI Bank':       '#F37421',
-    'Axis Bank':        '#800020',
-    'Axis Credit Card': '#9E1030',
-    'ICICI Credit Card':'#C05010',
-    default:            '#607D8B',
+    'HDFC Bank':  '#004C8C',
+    'ICICI Bank': '#F37421',
+    'Axis Bank':  '#9E1030',
+    default:      '#607D8B',
   };
 
-  const fmt = (n) => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const fmtShort = (n) => {
-    if (n >= 100000) return '₹' + (n / 100000).toFixed(1) + 'L';
-    if (n >= 1000) return '₹' + (n / 1000).toFixed(1) + 'K';
+  const CC_TYPES = ['Credit Card', 'credit card', 'CC'];
+
+  /* ──────────────────── State ────────────────────── */
+  let allRows = [];
+  let filteredRows = [];
+  let activeFilter = 'all';
+  let dateRange = { preset: '3m', from: null, to: null };
+
+  /* ──────────────────── Helpers ────────────────────── */
+  const fmt = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const fmtShort = n => {
+    if (n >= 100000) return '₹' + (n/100000).toFixed(1) + 'L';
+    if (n >= 1000)   return '₹' + (n/1000).toFixed(1) + 'K';
     return '₹' + Number(n).toFixed(0);
   };
 
-  let allRows = [];
-  let activeFilter = 'all';
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 
+  function isCC(row) {
+    return CC_TYPES.some(t => row.type && row.type.toLowerCase().includes(t.toLowerCase()));
+  }
+
+  /* ──────────────────── Date range logic ────────────────────── */
+  function getDateBounds(preset) {
+    const now = new Date('2026-09-05'); // today
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let from, to;
+    to = new Date(today);
+
+    if (preset === '7d') {
+      from = new Date(today); from.setDate(from.getDate() - 6);
+    } else if (preset === 'month') {
+      from = new Date(today.getFullYear(), today.getMonth(), 1);
+    } else if (preset === '3m') {
+      from = new Date(today); from.setMonth(from.getMonth() - 3);
+    } else {
+      return null; // all
+    }
+    return { from, to };
+  }
+
+  function applyDateFilter(rows) {
+    let from = dateRange.from;
+    let to = dateRange.to;
+    if (!from && !to && dateRange.preset !== 'all') {
+      const bounds = getDateBounds(dateRange.preset);
+      if (bounds) { from = bounds.from; to = bounds.to; }
+    }
+    if (!from && !to) return rows;
+    return rows.filter(r => {
+      const d = new Date(r.date);
+      if (from && d < from) return false;
+      if (to) { const te = new Date(to); te.setDate(te.getDate()+1); if (d >= te) return false; }
+      return true;
+    });
+  }
+
+  /* ──────────────────── CSV parsing ────────────────────── */
   function parseCSV(text) {
     const lines = text.trim().split('\n');
     const rows = [];
     for (let i = 1; i < lines.length; i++) {
       const cols = lines[i].match(/(".*?"|[^,]+|(?<=,)(?=,)|(?<=,)$|^(?=,))/g) || [];
-      const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+      const clean = cols.map(c => c.replace(/^"|"$/g,'').trim());
       if (clean.length < 7) continue;
       const [date, bank, type, amountRaw, merchant, category, direction] = clean;
       const amount = parseFloat(amountRaw);
       if (!date || isNaN(amount)) continue;
-      rows.push({ date, bank, type, amount, merchant, category, direction: direction.toLowerCase() });
+      rows.push({date, bank, type, amount, merchant, category, direction: direction.toLowerCase()});
     }
     return rows;
   }
 
-  function bankColor(name) {
-    return BANK_COLORS[name] || BANK_COLORS.default;
+  /* ──────────────────── Merge + dedup ────────────────────── */
+  function mergeData(live, seed) {
+    const key = r => `${r.date}|${r.bank}|${r.amount}`;
+    const liveKeys = new Set(live.map(key));
+    const extra = seed.filter(r => !liveKeys.has(key(r)));
+    return [...live, ...extra];
   }
 
-  function catColor(name) {
-    return CAT_COLORS[name] || CAT_COLORS.Other;
-  }
-
+  /* ──────────────────── Render functions ────────────────────── */
   function renderStats(rows) {
     const debits = rows.filter(r => r.direction === 'debit');
-    const credits = rows.filter(r => r.direction === 'credit');
-    const totalSpend = debits.reduce((s, r) => s + r.amount, 0);
-    const totalCredit = credits.reduce((s, r) => s + r.amount, 0);
-    const maxRow = debits.reduce((m, r) => r.amount > (m ? m.amount : -1) ? r : m, null);
+    const ccDebits = debits.filter(r => isCC(r));
+    const bankDebits = debits.filter(r => !isCC(r));
+    const totalSpend = debits.reduce((s,r) => s+r.amount, 0);
+    const ccSpend = ccDebits.reduce((s,r) => s+r.amount, 0);
+    const maxRow = debits.reduce((m,r) => r.amount>(m?m.amount:-1)?r:m, null);
 
-    document.getElementById('statTotalSpend').textContent = fmt(totalSpend);
-    document.getElementById('statTotalSub').textContent = `${debits.length} debit txns`;
-    document.getElementById('statCount').textContent = rows.length;
-    document.getElementById('statCountSub').textContent = [...new Set(rows.map(r => r.bank))].join(', ') || 'all banks';
-    document.getElementById('statMax').textContent = maxRow ? fmt(maxRow.amount) : '—';
-    document.getElementById('statMaxSub').textContent = maxRow ? maxRow.merchant || '—' : '—';
-    document.getElementById('statCredit').textContent = fmt(totalCredit);
-    document.getElementById('statCreditSub').textContent = `${credits.length} credit txns`;
+    // Avg daily spend
+    const dates = debits.map(r => r.date);
+    let avgDay = 0;
+    if (dates.length) {
+      const minD = new Date(dates.reduce((a,b)=>a<b?a:b));
+      const maxD = new Date(dates.reduce((a,b)=>a>b?a:b));
+      const days = Math.max(1, Math.round((maxD-minD)/(86400000))+1);
+      avgDay = totalSpend / days;
+    }
 
-    document.getElementById('dirDebitAmt').textContent = fmtShort(totalSpend);
-    document.getElementById('dirDebitSub').textContent = `${debits.length} transactions`;
-    document.getElementById('dirCreditAmt').textContent = fmtShort(totalCredit);
-    document.getElementById('dirCreditSub').textContent = `${credits.length} transactions`;
+    document.getElementById('statTotalSpend').textContent = fmtShort(totalSpend);
+    document.getElementById('statTotalSub').textContent = `${debits.length} debit txns · total ${fmt(totalSpend)}`;
+    document.getElementById('statCCSpend').textContent = fmtShort(ccSpend);
+    const ccPct = totalSpend ? Math.round(ccSpend/totalSpend*100) : 0;
+    document.getElementById('statCCSub').textContent = `${ccPct}% of total · ${ccDebits.length} txns`;
+    document.getElementById('statMax').textContent = maxRow ? fmtShort(maxRow.amount) : '—';
+    document.getElementById('statMaxSub').textContent = maxRow ? (maxRow.merchant || '—') : '—';
+    document.getElementById('statAvgDay').textContent = fmtShort(avgDay);
+    document.getElementById('statAvgDaySub').textContent = `per day in period`;
   }
 
   function renderCategories(rows) {
     const debits = rows.filter(r => r.direction === 'debit');
     const totals = {};
-    debits.forEach(r => { totals[r.category] = (totals[r.category] || 0) + r.amount; });
-    const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
-    const grand = sorted.reduce((s, [, v]) => s + v, 0) || 1;
+    debits.forEach(r => { totals[r.category] = (totals[r.category]||0)+r.amount; });
+    const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+    const grand = sorted.reduce((s,[,v])=>s+v,0)||1;
 
     const band = document.getElementById('catBand');
     const legend = document.getElementById('catLegend');
     band.innerHTML = '';
     legend.innerHTML = '';
 
+    if (!sorted.length) {
+      band.innerHTML = '<div style="width:100%;background:var(--surface-2);border-radius:6px;height:100%"></div>';
+      legend.innerHTML = '<p style="font-size:12px;color:var(--text-3)">No debit transactions</p>';
+      return;
+    }
+
     sorted.forEach(([cat, amt]) => {
-      const pct = (amt / grand) * 100;
-      const color = catColor(cat);
+      const pct = (amt/grand)*100;
+      const color = CAT_COLORS[cat]||CAT_COLORS.Other;
 
       const seg = document.createElement('div');
       seg.className = 'cat-seg';
-      seg.style.width = pct + '%';
+      seg.style.width = pct+'%';
       seg.style.background = color;
       seg.title = `${cat}: ${fmt(amt)}`;
       band.appendChild(seg);
 
-      const row = document.createElement('div');
-      row.className = 'legend-row';
-      row.innerHTML = `
-        <div class="legend-left">
-          <div class="legend-swatch" style="background:${color}"></div>
-          <span class="legend-name">${escHtml(cat)}</span>
+      legend.insertAdjacentHTML('beforeend', `
+        <div class="legend-row">
+          <div class="legend-left">
+            <div class="legend-swatch" style="background:${color}"></div>
+            <span class="legend-name">${escHtml(cat)}</span>
+          </div>
+          <div class="legend-bar-wrap">
+            <div class="legend-bar-fill" style="width:${pct}%;background:${color}"></div>
+          </div>
+          <span class="legend-amt">${fmt(amt)}</span>
         </div>
-        <div class="legend-bar-wrap">
-          <div class="legend-bar-fill" style="width:${pct}%;background:${color}"></div>
+      `);
+    });
+  }
+
+  function renderCCSpotlight(rows) {
+    const debits = rows.filter(r => r.direction === 'debit');
+    const ccDebits = debits.filter(r => isCC(r));
+    const bankDebits = debits.filter(r => !isCC(r));
+    const ccAmt = ccDebits.reduce((s,r)=>s+r.amount,0);
+    const bankAmt = bankDebits.reduce((s,r)=>s+r.amount,0);
+    const total = ccAmt + bankAmt || 1;
+    const ccPct = Math.round(ccAmt/total*100);
+    const bankPct = 100 - ccPct;
+
+    document.getElementById('ccTotalAmt').textContent = fmtShort(ccAmt);
+    document.getElementById('ccTotalSub').textContent = `${ccPct}% · ${ccDebits.length} txns`;
+    document.getElementById('bankTotalAmt').textContent = fmtShort(bankAmt);
+    document.getElementById('bankTotalSub').textContent = `${bankPct}% · ${bankDebits.length} txns`;
+    document.getElementById('ccBarFill').style.width = ccPct+'%';
+    document.getElementById('ccPctLeft').textContent = `CC: ${ccPct}%`;
+    document.getElementById('ccPctRight').textContent = `Bank: ${bankPct}%`;
+
+    // By credit card (Axis vs ICICI)
+    const byCard = {};
+    ccDebits.forEach(r => {
+      const k = r.bank; // 'Axis Bank' or 'ICICI Bank'
+      byCard[k] = (byCard[k]||0)+r.amount;
+    });
+    const cardSorted = Object.entries(byCard).sort((a,b)=>b[1]-a[1]);
+    const ccCardList = document.getElementById('ccCardList');
+    ccCardList.innerHTML = '';
+    if (!cardSorted.length) {
+      ccCardList.innerHTML = '<p style="font-size:12px;color:var(--text-3)">No CC transactions</p>';
+      return;
+    }
+    cardSorted.forEach(([bank, amt]) => {
+      ccCardList.insertAdjacentHTML('beforeend', `
+        <div class="cc-card-row">
+          <span class="cc-card-name">${escHtml(bank)} CC</span>
+          <span class="cc-card-amt">${fmt(amt)}</span>
         </div>
-        <span class="legend-amt">${fmt(amt)}</span>
+      `);
+    });
+  }
+
+  function renderMonthlyChart(rows) {
+    const debits = rows.filter(r => r.direction === 'debit');
+    const months = {};
+    debits.forEach(r => {
+      const m = r.date.substring(0,7);
+      months[m] = (months[m]||0)+r.amount;
+    });
+    const sorted = Object.entries(months).sort((a,b)=>a[0].localeCompare(b[0]));
+    const svg = document.getElementById('monthlyChart');
+    if (!sorted.length) { svg.innerHTML = '<text x="350" y="55" text-anchor="middle" fill="var(--text-3)" font-size="12">No data</text>'; return; }
+
+    const W = 700, H = 100;
+    const padL = 8, padR = 8, padT = 18, padB = 22;
+    const chartW = W - padL - padR;
+    const chartH = H - padT - padB;
+    const max = Math.max(...sorted.map(([,v])=>v));
+    const n = sorted.length;
+    const barW = Math.min(60, (chartW/n)*0.55);
+    const gap = chartW/n;
+
+    const MONTH_NAMES = {
+      '01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun',
+      '07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'
+    };
+
+    let svgContent = '';
+    sorted.forEach(([month, amt], i) => {
+      const x = padL + i*gap + gap/2 - barW/2;
+      const barH = (amt/max)*chartH;
+      const y = padT + chartH - barH;
+      const label = MONTH_NAMES[month.substring(5)] || month.substring(5);
+      const yearLabel = month.substring(2,4);
+
+      svgContent += `
+        <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="3" fill="var(--accent)" opacity="0.85"/>
+        <text x="${x+barW/2}" y="${y-4}" text-anchor="middle" font-size="8" fill="var(--text-2)" font-family="IBM Plex Mono,monospace">${fmtShort(amt)}</text>
+        <text x="${x+barW/2}" y="${H-5}" text-anchor="middle" font-size="9" fill="var(--text-3)" font-family="IBM Plex Sans,sans-serif">${label} '${yearLabel}</text>
       `;
-      legend.appendChild(row);
     });
 
-    if (sorted.length === 0) {
-      band.innerHTML = '<div style="width:100%;background:var(--surface-2);border-radius:6px;height:100%"></div>';
-      legend.innerHTML = '<p style="font-size:12px;color:var(--text-3)">No debit transactions yet</p>';
-    }
+    svg.innerHTML = svgContent;
+  }
+
+  function renderTopMerchants(rows) {
+    const debits = rows.filter(r => r.direction === 'debit');
+    const totals = {};
+    debits.forEach(r => {
+      const m = r.merchant||'Unknown';
+      totals[m] = (totals[m]||0)+r.amount;
+    });
+    const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const max = sorted[0]?.[1]||1;
+    const list = document.getElementById('merchantList');
+    list.innerHTML = '';
+    if (!sorted.length) { list.innerHTML = '<p style="font-size:12px;color:var(--text-3)">No data</p>'; return; }
+
+    sorted.forEach(([name, amt], i) => {
+      const pct = (amt/max)*100;
+      list.insertAdjacentHTML('beforeend', `
+        <div class="merchant-row">
+          <span class="merchant-rank">${i+1}</span>
+          <span class="merchant-name">${escHtml(name)}</span>
+          <div class="merchant-bar-wrap">
+            <div class="merchant-bar-fill" style="width:${pct}%"></div>
+          </div>
+          <span class="merchant-amt">${fmt(amt)}</span>
+        </div>
+      `);
+    });
   }
 
   function renderBanks(rows) {
     const totals = {};
     const counts = {};
-    rows.filter(r => r.direction === 'debit').forEach(r => {
-      totals[r.bank] = (totals[r.bank] || 0) + r.amount;
-      counts[r.bank] = (counts[r.bank] || 0) + 1;
+    rows.filter(r=>r.direction==='debit').forEach(r=>{
+      totals[r.bank]=(totals[r.bank]||0)+r.amount;
+      counts[r.bank]=(counts[r.bank]||0)+1;
     });
-    const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
-    const max = sorted[0]?.[1] || 1;
-
+    const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+    const max = sorted[0]?.[1]||1;
     const list = document.getElementById('bankList');
     list.innerHTML = '';
-
-    if (sorted.length === 0) {
-      list.innerHTML = '<p style="font-size:12px;color:var(--text-3)">No data yet</p>';
-      return;
-    }
+    if (!sorted.length) { list.innerHTML = '<p style="font-size:12px;color:var(--text-3)">No data yet</p>'; return; }
 
     sorted.forEach(([bank, amt]) => {
-      const pct = (amt / max) * 100;
-      const color = bankColor(bank);
-      const item = document.createElement('div');
-      item.className = 'bank-item';
-      item.innerHTML = `
-        <div class="bank-top">
-          <div class="bank-name-wrap">
-            <div class="bank-stripe" style="background:${color}"></div>
-            <span class="bank-name">${escHtml(bank)}</span>
-            <span class="bank-count">${counts[bank]} txn${counts[bank] !== 1 ? 's' : ''}</span>
+      const pct = (amt/max)*100;
+      const color = BANK_COLORS[bank]||BANK_COLORS.default;
+      list.insertAdjacentHTML('beforeend', `
+        <div class="bank-item">
+          <div class="bank-top">
+            <div class="bank-name-wrap">
+              <div class="bank-stripe" style="background:${color}"></div>
+              <span class="bank-name">${escHtml(bank)}</span>
+              <span class="bank-count">${counts[bank]} txn${counts[bank]!==1?'s':''}</span>
+            </div>
+            <span class="bank-amount">${fmt(amt)}</span>
           </div>
-          <span class="bank-amount">${fmt(amt)}</span>
+          <div class="bank-bar-track">
+            <div class="bank-bar-fill" style="width:${pct}%;background:${color}"></div>
+          </div>
         </div>
-        <div class="bank-bar-track">
-          <div class="bank-bar-fill" style="width:${pct}%;background:${color}"></div>
-        </div>
-      `;
-      list.appendChild(item);
+      `);
     });
   }
 
   function renderTable(rows) {
-    const filtered = activeFilter === 'all' ? rows : rows.filter(r => r.direction === activeFilter);
-    const tbody = document.getElementById('txnBody');
+    let filtered;
+    if (activeFilter === 'all') filtered = rows;
+    else if (activeFilter === 'cc') filtered = rows.filter(r => r.direction==='debit' && isCC(r));
+    else filtered = rows.filter(r => r.direction === activeFilter);
 
-    if (filtered.length === 0) {
+    const tbody = document.getElementById('txnBody');
+    document.getElementById('txnCount').textContent = `(${filtered.length})`;
+
+    if (!filtered.length) {
       tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><p>No transactions</p><small>New emails are processed every 15 minutes</small></td></tr>`;
       return;
     }
 
-    const sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
-
+    const sorted = [...filtered].sort((a,b)=>new Date(b.date)-new Date(a.date));
     tbody.innerHTML = sorted.map(r => {
-      const color = catColor(r.category);
-      const dir = r.direction === 'debit' ? 'debit' : 'credit';
-      const sign = dir === 'debit' ? '−' : '+';
+      const color = CAT_COLORS[r.category]||CAT_COLORS.Other;
+      const dir = r.direction==='debit'?'debit':'credit';
+      const sign = dir==='debit'?'−':'+';
+      const ccBadge = isCC(r) ? `<span class="cc-badge">CC</span>` : '';
       return `<tr>
         <td class="td-date">${escHtml(r.date)}</td>
         <td class="td-bank">${escHtml(r.bank)}</td>
-        <td class="td-merchant">${escHtml(r.merchant || '—')}</td>
+        <td class="td-merchant">${escHtml(r.merchant||'—')}${ccBadge}</td>
         <td class="td-type">${escHtml(r.type)}</td>
         <td><span class="cat-chip" style="background:${color}18;color:${color}">${escHtml(r.category)}</span></td>
         <td><span class="dir-badge ${dir}">${dir}</span></td>
@@ -851,44 +1349,92 @@
     }).join('');
   }
 
-  function escHtml(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  function renderAll() {
+    filteredRows = applyDateFilter(allRows);
+    renderStats(filteredRows);
+    renderCategories(filteredRows);
+    renderCCSpotlight(filteredRows);
+    renderMonthlyChart(filteredRows);
+    renderTopMerchants(filteredRows);
+    renderBanks(filteredRows);
+    renderTable(filteredRows);
   }
 
+  /* ──────────────────── Status ────────────────────── */
   function setStatus(state, text) {
     const dot = document.getElementById('statusDot');
     dot.className = 'status-dot ' + state;
     document.getElementById('statusText').textContent = text;
   }
 
+  /* ──────────────────── Load data ────────────────────── */
   async function loadData() {
     setStatus('loading', 'Loading…');
+    let liveRows = [];
     try {
       const res = await fetch(CSV_URL);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
-      allRows = parseCSV(text);
-      renderStats(allRows);
-      renderCategories(allRows);
-      renderBanks(allRows);
-      renderTable(allRows);
-      const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-      setStatus('ok', `Updated ${now}`);
-    } catch (e) {
-      setStatus('error', 'Failed to load — ' + e.message);
-      document.getElementById('txnBody').innerHTML = `<tr><td colspan="7" class="empty-state"><p>Could not fetch data</p><small>${escHtml(e.message)}</small></td></tr>`;
+      if (res.ok) {
+        const text = await res.text();
+        liveRows = parseCSV(text);
+      }
+    } catch (_) {}
+
+    allRows = mergeData(liveRows, SEED_DATA);
+    renderAll();
+
+    const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+    setStatus('', `${allRows.length} txns · Updated ${now}`);
+    document.getElementById('statusDot').className = 'status-dot';
+  }
+
+  /* ──────────────────── Date filter events ────────────────────── */
+  document.getElementById('datePills').addEventListener('click', e => {
+    const btn = e.target.closest('.pill');
+    if (!btn) return;
+    const preset = btn.dataset.range;
+    dateRange = {preset, from: null, to: null};
+    document.querySelectorAll('#datePills .pill').forEach(p=>p.classList.toggle('active',p===btn));
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    renderAll();
+  });
+
+  function applyCustomDates() {
+    const f = document.getElementById('dateFrom').value;
+    const t = document.getElementById('dateTo').value;
+    if (f || t) {
+      dateRange = {
+        preset: null,
+        from: f ? new Date(f) : null,
+        to: t ? new Date(t) : null
+      };
+      document.querySelectorAll('#datePills .pill').forEach(p=>p.classList.remove('active'));
+      renderAll();
     }
   }
 
-  document.getElementById('refreshBtn').addEventListener('click', loadData);
+  document.getElementById('dateFrom').addEventListener('change', applyCustomDates);
+  document.getElementById('dateTo').addEventListener('change', applyCustomDates);
 
-  document.getElementById('filterRow').addEventListener('click', (e) => {
+  /* ──────────────────── Direction filter ────────────────────── */
+  document.getElementById('filterRow').addEventListener('click', e => {
     const btn = e.target.closest('.pill');
     if (!btn) return;
     activeFilter = btn.dataset.filter;
-    document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p === btn));
-    renderTable(allRows);
+    document.querySelectorAll('#filterRow .pill').forEach(p=>p.classList.toggle('active',p===btn));
+    renderTable(filteredRows);
   });
+
+  /* ──────────────────── Refresh ────────────────────── */
+  document.getElementById('refreshBtn').addEventListener('click', loadData);
+
+  /* ──────────────────── Init ────────────────────── */
+  // Set default date range (last 3 months)
+  (function initDateRange() {
+    const today = '2026-09-05';
+    const threeMonthsAgo = '2026-06-05';
+    // dateFrom/dateTo left empty so preset '3m' is used
+  })();
 
   loadData();
 </script>
